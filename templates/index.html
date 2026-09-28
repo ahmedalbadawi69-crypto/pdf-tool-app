@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أداة استخراج النصوص من PDF</title>
-    <!-- مكتبة PDF.js لمعالجة الملفات داخل المتصفح مباشرة -->
+    <title>PDF Text Extractor Tool</title>
+    <!-- PDF.js library for in-browser processing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
         body {
@@ -68,21 +68,21 @@
 <body>
 
 <div class="container">
-    <h2>أداة استخراج النصوص من ملفات PDF</h2>
+    <h2>PDF Text Extractor Tool</h2>
     
     <div class="upload-area" onclick="document.getElementById('pdf-input').click()">
-        <p>اضغط هنا لاختيار ملف PDF من جهازك</p>
-        <button class="btn" type="button">اختر الملف</button>
+        <p>Click here to select a PDF file from your device</p>
+        <button class="btn" type="button">Choose File</button>
         <input type="file" id="pdf-input" accept="application/pdf">
     </div>
 
     <div id="status"></div>
 
-    <textarea id="output-text" placeholder="سيظهر النص المستخرج هنا..." readonly></textarea>
+    <textarea id="output-text" placeholder="Extracted text will appear here..." readonly></textarea>
 </div>
 
 <script>
-    // إعداد مكتبة PDF.js
+    // Initialize PDF.js
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
     const fileInput = document.getElementById('pdf-input');
@@ -93,7 +93,7 @@
         const file = e.target.files[0];
         if (!file) return;
 
-        statusDiv.innerText = "جاري قراءة الملف وتفريغ النصوص...";
+        statusDiv.innerText = "Reading file and extracting text...";
         outputText.value = "";
 
         const fileReader = new FileReader();
@@ -109,14 +109,14 @@
                     const page = await pdf.getPage(i);
                     const textContent = await page.getTextContent();
                     const pageText = textContent.items.map(item => item.str).join(" ");
-                    fullText += `--- الصفحة (${i}) ---\n` + pageText + "\n\n";
+                    fullText += `--- Page (${i}) ---\n` + pageText + "\n\n";
                 }
 
-                outputText.value = fullText.trim() ? fullText : "لم يتم العثور على نصوص قابلة للاستخراج داخل هذا الملف.";
-                statusDiv.innerText = "تم استخراج النص بنجاح!";
+                outputText.value = fullText.trim() ? fullText : "No extractable text found in this PDF file.";
+                statusDiv.innerText = "Text extracted successfully!";
             } catch (error) {
                 console.error(error);
-                statusDiv.innerText = "حدث خطأ أثناء قراءة ملف PDF.";
+                statusDiv.innerText = "An error occurred while reading the PDF file.";
             }
         };
 
