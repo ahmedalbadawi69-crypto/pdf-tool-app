@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة استخراج النصوص من PDF</title>
+    <!-- مكتبة PDF.js لمعالجة الملفات داخل المتصفح مباشرة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 700px;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h2 { color: #0f172a; margin-bottom: 20px; }
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            padding: 30px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        input[type="file"] { display: none; }
+        .btn {
+            background-color: #2563eb;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        .btn:hover { background-color: #1d4ed8; }
+        textarea {
+            width: 100%;
+            height: 250px;
+            margin-top: 15px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+            resize: vertical;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        #status {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>أداة استخراج النصوص من ملفات PDF</h2>
+    
+    <div class="upload-area" onclick="document.getElementById('pdf-input').click()">
+        <p>اضغط هنا لاختيار ملف PDF من جهازك</p>
+        <button class="btn" type="button">اختر الملف</button>
+        <input type="file" id="pdf-input" accept="application/pdf">
+    </div>
+
+    <div id="status"></div>
+
+    <textarea id="output-text" placeholder="سيظهر النص المستخرج هنا..." readonly></textarea>
+</div>
+
+<script>
+    // إعداد مكتبة PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+    const fileInput = document.getElementById('pdf-input');
+    const statusDiv = document.getElementById('status');
+    const outputText = document.getElementById('output-text');
+
+    fileInput.addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        statusDiv.innerText = "جاري قراءة الملف وتفريغ النصوص...";
+        outputText.value = "";
+
+        const fileReader = new FileReader();
+
+        fileReader.onload = async function() {
+            const typedarray = new Uint8Array(this.result);
+
+            try {
+                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                let fullText = "";
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(" ");
+                    fullText += `--- الصفحة (${i}) ---\n` + pageText + "\n\n";
+                }
+
+                outputText.value = fullText.trim() ? fullText : "لم يتم العثور على نصوص قابلة للاستخراج داخل هذا الملف.";
+                statusDiv.innerText = "تم استخراج النص بنجاح!";
+            } catch (error) {
+                console.error(error);
+                statusDiv.innerText = "حدث خطأ أثناء قراءة ملف PDF.";
+            }
+        };
+
+        fileReader.readAsArrayBuffer(file);
+    });
+</script>
+
+</body>
+</html>
